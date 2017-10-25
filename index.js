@@ -421,6 +421,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
+    alignItems: 'baseline',
   },
   textInput: {
     height: 36,
@@ -437,7 +438,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginRight: 3,
     padding: 8,
-    height: 24,
     borderRadius: 2,
   },
   tagText: {
