@@ -116,7 +116,6 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
   spaceLeft = 0;
   // scroll to bottom
   contentHeight = 0;
-  scrollViewHeight = 0;
   // refs
   tagInput: ?TextInput = null;
   scrollView: ?ScrollView = null;
@@ -203,19 +202,6 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
     this.props.onChange(tags);
   }
 
-  scrollToBottom = () => {
-    const y = this.contentHeight - this.scrollViewHeight;
-    if (y <= 0) {
-      return;
-    }
-    const scrollView = this.scrollView;
-    invariant(
-      scrollView,
-      "this.scrollView ref should exist before scrollToBottom called",
-    );
-    scrollView.scrollTo({ y, animated: true });
-  }
-
   render() {
     const tags = this.props.value.map((tag, index) => (
       <Tag
@@ -242,6 +228,7 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
           <ScrollView
             ref={this.scrollViewRef}
             style={styles.tagInputContainerScroll}
+            contentContainerStyle={styles.tagInputContainerScrollContainer}
             onContentSizeChange={this.onScrollViewContentSizeChange}
             onLayout={this.onScrollViewLayout}
             keyboardShouldPersistTaps="handled"
@@ -293,22 +280,18 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
     if (this.contentHeight === h) {
       return;
     }
+
     const nextWrapperHeight = Math.min(this.props.maxHeight, h);
     if (nextWrapperHeight !== this.state.wrapperHeight) {
-      this.setState(
-        { wrapperHeight: nextWrapperHeight },
-        this.contentHeight < h ? this.scrollToBottom : undefined,
-      );
+      this.setState({
+        wrapperHeight: nextWrapperHeight,
+      }, () => {
+        this.scrollView.scrollToEnd();
+      });
     } else if (this.contentHeight < h) {
-      this.scrollToBottom();
+      this.scrollView.scrollToEnd();
     }
     this.contentHeight = h;
-  }
-
-  onScrollViewLayout = (
-    event: { nativeEvent: { layout: { height: number } } },
-  ) => {
-    this.scrollViewHeight = event.nativeEvent.layout.height;
   }
 
   onLayoutLastTag = (endPosOfTag: number) => {
@@ -417,8 +400,12 @@ const styles = StyleSheet.create({
   tagInputContainerScroll: {
     flex: 1,
   },
+  tagInputContainerScrollContainer: {
+    flexGrow: 1,
+  },
   tagInputContainer: {
     flex: 1,
+    flexGrow: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'baseline',
@@ -432,6 +419,7 @@ const styles = StyleSheet.create({
   },
   textInputContainer: {
     height: 36,
+    marginTop: 6,
   },
   tag: {
     justifyContent: 'center',
