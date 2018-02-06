@@ -22,6 +22,8 @@ import invariant from 'invariant';
 
 const windowWidth = Dimensions.get('window').width;
 
+type KeyboardShouldPersistTapsProps =
+  "always" | "never" | "handled" | false | true;
 type RequiredProps<T> = {
   /**
    * An array of tags, which can be any type, as long as labelExtractor below
@@ -86,6 +88,10 @@ type OptionalProps = {
    * Callback that gets passed the new component height when it changes
    */
   onHeightChange?: (height: number) => void,
+  /**
+   * Any ScrollView props (horizontal, showsHorizontalScrollIndicator, etc.)
+  */
+  scrollViewProps?: $PropertyType<ScrollView, 'props'>,
 };
 type Props<T> = RequiredProps<T> & OptionalProps;
 type State = {
@@ -111,6 +117,8 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
     inputProps: PropTypes.shape(TextInput.propTypes),
     maxHeight: PropTypes.number,
     onHeightChange: PropTypes.func,
+    // $FlowFixMe: identify EdgeInsetsPropType, PointPropType as React PropType
+    scrollViewProps: PropTypes.shape(ScrollView.propTypes),
   };
   props: Props<T>;
   state: State;
@@ -206,6 +214,7 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
     const tags = [...this.props.value];
     tags.pop();
     this.props.onChange(tags);
+    this.scrollToEnd();
     this.focus();
   }
 
@@ -248,8 +257,10 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
             style={styles.tagInputContainerScroll}
             contentContainerStyle={styles.tagInputContainerScrollContainer}
             onContentSizeChange={this.onScrollViewContentSizeChange}
-            onLayout={this.onScrollViewLayout}
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps={
+              ("handled": KeyboardShouldPersistTapsProps)
+            }
+            {...this.props.scrollViewProps}
           >
             <View style={styles.tagInputContainer}>
               {tags}
