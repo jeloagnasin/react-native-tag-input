@@ -40,6 +40,10 @@ type RequiredProps<T> = {
    */
   labelExtractor: (tagData: T) => string,
   /**
+   * Function to extract if remove is enabled.
+   */
+  removeEnabledExtractor: (tagData: T) => bool,
+  /**
    * The text currently being displayed in the TextInput following the list of
    * tags
    */
@@ -105,6 +109,7 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
     value: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired,
     labelExtractor: PropTypes.func.isRequired,
+    removeEnabledExtractor: PropTypes.func,
     text: PropTypes.string.isRequired,
     onChangeText: PropTypes.func.isRequired,
     tagColor: PropTypes.string,
@@ -131,6 +136,7 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
   scrollView: ?ScrollView = null;
 
   static defaultProps = {
+    removeEnabledExtractor: () => true,
     tagColor: '#dddddd',
     tagTextColor: '#777777',
     inputDefaultWidth: 90,
@@ -234,6 +240,7 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
       <Tag
         index={index}
         label={this.props.labelExtractor(tag)}
+        removeEnabled={this.props.removeEnabledExtractor(tag)}
         isLastTag={this.props.value.length === index + 1}
         onLayoutLastTag={this.onLayoutLastTag}
         removeIndex={this.removeIndex}
@@ -342,6 +349,7 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
 type TagProps = {
   index: number,
   label: string,
+  removeEnabled: bool,
   isLastTag: bool,
   onLayoutLastTag: (endPosOfTag: number) => void,
   removeIndex: (index: number) => void,
@@ -356,6 +364,7 @@ class Tag extends React.PureComponent<TagProps> {
   static propTypes = {
     index: PropTypes.number.isRequired,
     label: PropTypes.string.isRequired,
+    removeEnabled: PropTypes.bool.isRequired,
     isLastTag: PropTypes.bool.isRequired,
     onLayoutLastTag: PropTypes.func.isRequired,
     removeIndex: PropTypes.func.isRequired,
@@ -394,13 +403,17 @@ class Tag extends React.PureComponent<TagProps> {
           this.props.tagTextStyle,
         ]}>
           {this.props.label}
-          &nbsp;&times;
+          {this.props.removeEnabled &&
+            '&nbsp;&times;'
+          }
         </Text>
       </TouchableOpacity>
     );
   }
 
   onPress = () => {
+    if (!this.props.removeEnabled) return;
+
     this.props.removeIndex(this.props.index);
   }
 
