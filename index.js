@@ -404,7 +404,7 @@ class Tag extends React.PureComponent<TagProps> {
         ]}>
           {this.props.label}
           {this.props.removeEnabled &&
-            '&nbsp;&times;'
+            ' ×'
           }
         </Text>
       </TouchableOpacity>
