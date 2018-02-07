@@ -235,6 +235,17 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
     this.props.onChange(tags);
   }
 
+  scrollToEnd = () => {
+    const scrollView = this.scrollView;
+    invariant(
+      scrollView,
+      "this.scrollView ref should exist before scrollToEnd called",
+    );
+    setTimeout(() => {
+      scrollView.scrollToEnd({ animated: true });
+    }, 0);
+  }
+
   render() {
     const tags = this.props.value.map((tag, index) => (
       <Tag
@@ -262,7 +273,6 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
           <ScrollView
             ref={this.scrollViewRef}
             style={styles.tagInputContainerScroll}
-            contentContainerStyle={styles.tagInputContainerScrollContainer}
             onContentSizeChange={this.onScrollViewContentSizeChange}
             keyboardShouldPersistTaps={
               ("handled": KeyboardShouldPersistTapsProps)
@@ -316,16 +326,14 @@ class TagInput<T> extends React.PureComponent<Props<T>, State> {
     if (this.contentHeight === h) {
       return;
     }
-
     const nextWrapperHeight = Math.min(this.props.maxHeight, h);
     if (nextWrapperHeight !== this.state.wrapperHeight) {
-      this.setState({
-        wrapperHeight: nextWrapperHeight,
-      }, () => {
-        this.scrollView.scrollToEnd();
-      });
+      this.setState(
+        { wrapperHeight: nextWrapperHeight },
+        this.contentHeight < h ? this.scrollToEnd : undefined,
+      );
     } else if (this.contentHeight < h) {
-      this.scrollView.scrollToEnd();
+      this.scrollToEnd();
     }
     this.contentHeight = h;
   }
@@ -443,15 +451,10 @@ const styles = StyleSheet.create({
   tagInputContainerScroll: {
     flex: 1,
   },
-  tagInputContainerScrollContainer: {
-    flexGrow: 1,
-  },
   tagInputContainer: {
     flex: 1,
-    flexGrow: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    alignItems: 'baseline',
   },
   textInput: {
     height: 36,
@@ -462,13 +465,13 @@ const styles = StyleSheet.create({
   },
   textInputContainer: {
     height: 36,
-    marginTop: 6,
   },
   tag: {
     justifyContent: 'center',
     marginTop: 6,
     marginRight: 3,
     padding: 8,
+    height: 24,
     borderRadius: 2,
   },
   tagText: {
